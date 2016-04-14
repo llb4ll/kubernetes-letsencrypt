@@ -4,9 +4,12 @@ from pykube import KubeConfig, HTTPClient, Ingress
 from time import sleep
 import sys
 import logging
+import pprint
 
 SERVICE_ACCOUNT_PATH="/var/run/secrets/kubernetes.io/serviceaccount"
 NAMESPACE_FILE=SERVICE_ACCOUNT_PATH + "/namespace"
+
+prettyprint = pprint.PrettyPrinter().pprint
 
 def main():
     kube_config = get_kube_config()
@@ -14,8 +17,8 @@ def main():
     namespace = get_namespace()
     while (True):
         ingress_objs = fetch_all_ingress_objects(api_client, namespace)
-        print(ingress_objs)
-        sleep(60)
+        prettyprint(ingress_objs)
+        sleep(10)
 
 
 def fetch_all_ingress_objects(api_client, namespace):

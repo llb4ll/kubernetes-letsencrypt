@@ -1,4 +1,5 @@
 #!/bin/sh
 
 echo Starting letsencryptor
-python3 pykube_example.py
+# Unbuffered mode to allow stdout loggind
+python3 -u pykube_example.py
