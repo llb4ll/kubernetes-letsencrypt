@@ -1,10 +1,9 @@
-FROM ubuntu:15.10
+FROM debian:jessie-backports
 
-RUN apt-get -y update && apt-get install -y python3-pip python-pip
-RUN pip3 install pykube
-RUN pip2 install letsencrypt
+RUN apt-get update && apt-get install -y -t jessie-backports --no-install-recommends bash letsencrypt openssl python-pip
+
+RUN pip install pykube
 
 ADD pykube_example.py /pykube_example.py
-ADD start.sh /start.sh
 
-ENTRYPOINT ["/start.sh"]
+ENTRYPOINT ["python", "-u", "/pykube_example.py"]
