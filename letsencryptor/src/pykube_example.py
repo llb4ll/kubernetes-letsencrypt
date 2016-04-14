@@ -5,6 +5,11 @@ from time import sleep
 import sys
 import logging
 import pprint
+import subprocess
+
+INGRESS_NAME_LETSENCRYPTOR = "letsencryptor"
+
+logging.basicConfig(level=logging.INFO)
 
 SERVICE_ACCOUNT_PATH="/var/run/secrets/kubernetes.io/serviceaccount"
 NAMESPACE_FILE=SERVICE_ACCOUNT_PATH + "/namespace"
@@ -12,54 +17,59 @@ NAMESPACE_FILE=SERVICE_ACCOUNT_PATH + "/namespace"
 prettyprint = pprint.PrettyPrinter().pprint
 
 
+
 def main():
-    print("Letsencryptor reached first print statement")
-    logging.info("Letsencryptor's first log message")
     kube_config = get_kube_config()
     api_client = HTTPClient(kube_config)
     namespace = get_namespace()
-    create_ingress_object(api_client, namespace)
+    logging.info("Letsencryptor's starting for namespace {}".format(namespace))
     while (True):
-        ingress_objs = fetch_all_ingress_objects(api_client, namespace)
-        prettyprint_iter(ingress_objs)
+        ingress = fetch_ingress_object(api_client, namespace)
+        if ingress is not None:
+            refresh_ingress(ingress)
         sleep(10)
 
 
-def fetch_all_ingress_objects(api_client, namespace):
+def fetch_ingress_object(api_client, namespace):
     try:
-        return list(Ingress.objects(api_client).filter(namespace=namespace))
+        for ingress in Ingress.objects(api_client).filter(namespace=namespace):
+            if ingress.name == INGRESS_NAME_LETSENCRYPTOR:
+                return ingress
     except Exception as exception:
         logging.exception(exception)
-        logging.info("Failed to fetch Ingress objects from k8s API server.")
-        return []
+        logging.info("Failed to fetch Ingress objects in namespace {}".format(namespace))
+        return None
+    logging.info("Failed to find ingress controller in namespace {} with name {}".format(namespace, INGRESS_NAME_LETSENCRYPTOR))
+    return None
 
 
-def create_ingress_object(api_client, namespace):
-    ingress = {
-        'metadata':  {
-                'name': 'letsencryptor-https-test',
-                'namespace': namespace},
-        'spec': {
-            "backend": {
-                "serviceName": "server-minefield",
-                "servicePort": 8080
-            },
-            'rules': [{
-                'host': 'demo.cg.ts.egym.coffee',
-                'https': {
-                    'paths': [
-                        {
-                            'backend': {
-                                'serviceName': 'server-minefield',
-                                'servicePort': 8080},
-                            'path': '/'}]}}]}}
-    print("Creating ingress object with this structure: ")
-    prettyprint(ingress)
-    pykube_ingress = Ingress(api_client, ingress)
-    pykube_ingress.create()
-    print("Created ingress object with this structure: ")
-    prettyprint(pykube_ingress.obj)
+def get_hosts(ingress):
+    rules = ingress.obj['spec']['rules']
+    return (rule['host'] for rule in rules)
 
+
+def renew_letsencrypt(host_list):
+    subprocess.call([
+        "letsencrypt",
+        "certonly",
+        "--non-interactive",
+        "--agree-tos",
+        "--email=\"{}\".format(EMAIL)",
+        "--standalone",
+        "--standalone-supported-challenges=http-01",
+        "--rsa-key-size=2048",
+        "--keep-until-expiring",
+        "--domains=\"{}\"".format(host_list),
+        "--test-cert"
+    ])
+
+
+
+def refresh_ingress(ingress):
+    hosts = get_hosts(ingress)
+    host_list = ", ".join(hosts)   
+    renew_letsencrypt(host_list)
+    
 
 
 
