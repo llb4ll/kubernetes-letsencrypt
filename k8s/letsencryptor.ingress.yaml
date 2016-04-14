@@ -18,6 +18,10 @@ spec:
           backend:
             serviceName: server-letsencryptor
             servicePort: 8080
+        - path: /foo
+          backend:
+            serviceName: server-minefield
+            servicePort: 8080
   tls:
-    - secretName: letsencryptor-base
+    - secretName: letsencryptor-base2
   
