@@ -11,13 +11,17 @@ NAMESPACE_FILE=SERVICE_ACCOUNT_PATH + "/namespace"
 
 prettyprint = pprint.PrettyPrinter().pprint
 
+
 def main():
+    print("Letsencryptor reached first print statement")
+    logging.info("Letsencryptor's first log message")
     kube_config = get_kube_config()
     api_client = HTTPClient(kube_config)
     namespace = get_namespace()
+    create_ingress_object(api_client, namespace)
     while (True):
         ingress_objs = fetch_all_ingress_objects(api_client, namespace)
-        prettyprint(ingress_objs)
+        prettyprint_iter(ingress_objs)
         sleep(10)
 
 
@@ -28,6 +32,35 @@ def fetch_all_ingress_objects(api_client, namespace):
         logging.exception(exception)
         logging.info("Failed to fetch Ingress objects from k8s API server.")
         return []
+
+
+def create_ingress_object(api_client, namespace):
+    ingress = {
+        'metadata':  {
+                'name': 'letsencryptor-https-test',
+                'namespace': namespace},
+        'spec': {
+            "backend": {
+                "serviceName": "server-minefield",
+                "servicePort": 8080
+            },
+            'rules': [{
+                'host': 'demo.cg.ts.egym.coffee',
+                'https': {
+                    'paths': [
+                        {
+                            'backend': {
+                                'serviceName': 'server-minefield',
+                                'servicePort': 8080},
+                            'path': '/'}]}}]}}
+    print("Creating ingress object with this structure: ")
+    prettyprint(ingress)
+    pykube_ingress = Ingress(api_client, ingress)
+    pykube_ingress.create()
+    print("Created ingress object with this structure: ")
+    prettyprint(pykube_ingress.obj)
+
+
 
 
 
@@ -49,6 +82,11 @@ def get_namespace():
         logging.exception(exception)
     logging.info("Fallback to default namespace")
     return "default"
+
+
+def prettyprint_iter(iterable):
+    for item in iterable:
+        prettyprint(item.__dict__)
 
 
 if __name__ == "__main__":
