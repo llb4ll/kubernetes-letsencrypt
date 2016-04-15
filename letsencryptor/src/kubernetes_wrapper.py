@@ -1,11 +1,13 @@
+from copy import copy
 from pykube import Ingress, KubeConfig, HTTPClient, Secret
 import logging
 
 
 log = logging.getLogger("Kubenertes")
 
-SCERET_LABEL_LETSENCRYPTOR = "letsencryptor-tls"
-INGRESS_NAME_LETSENCRYPTOR = "letsencryptor"
+SCERET_LABEL = "letsencryptor-tls"
+SECRET_BASENAME = SCERET_LABEL
+INGRESS_NAME = "letsencryptor"
 SERVICE_ACCOUNT_PATH="/var/run/secrets/kubernetes.io/serviceaccount"
 NAMESPACE_FILE=SERVICE_ACCOUNT_PATH + "/namespace"
 TOKEN_FILE=SERVICE_ACCOUNT_PATH + "/token"
@@ -25,7 +27,7 @@ class Kubernetes(object):
         namespace = _get_namespace_from_secrets()
         return Kubernetes(api_client=api_client, kube_config=kube_config, namespace=namespace)
 
-    def fetch_ingress_object(self, name=INGRESS_NAME_LETSENCRYPTOR):
+    def fetch_ingress_object(self, name=INGRESS_NAME):
         try:
             for ingress in Ingress.objects(self.api_client).filter(namespace=self.namespace):
                 if ingress.name == name:
@@ -37,8 +39,34 @@ class Kubernetes(object):
         log.info("Failed to find ingress controller in namespace {} with name {}".format(self.namespace, name))
         return None
 
-    def fetch_secret_objects(self, label=SCERET_LABEL_LETSENCRYPTOR):
+    def fetch_secret_objects(self, label=SCERET_LABEL):
         return list(Secret.objects(self.api_client).filter(selector=label, namespace=self.namespace))
+
+    def create_secret(self, secret_obj):
+        self.set_namespace(secret_obj)
+        pykube_secret = Secret(self.api_client, secret_obj)
+        pykube_secret.create()
+        return pykube_secret
+
+    def set_namespace(self, k8s_obj):
+        set_namespace(k8s_obj, self.namespace)
+
+
+def set_name(k8s_obj, name):
+    _set_dict_path(k8s_obj, ['name'], name)
+
+
+def set_namespace(k8s_obj, namespace):
+    _set_dict_path(k8s_obj, ['metadata', 'namespace'], namespace)
+
+
+def set_label(k8s_obj, key, val):
+    _set_dict_path(k8s_obj, ['metadata', 'labels', key], val)
+
+
+def get_hosts_from_pykube_ingress(ingress):
+    rules = ingress.obj['spec']['rules']
+    return (rule['host'] for rule in rules)
 
 
 def _get_namespace_from_secrets(namespace_filename=NAMESPACE_FILE):
@@ -52,8 +80,15 @@ def _get_namespace_from_secrets(namespace_filename=NAMESPACE_FILE):
         logging.info("Fallback to default namespace")
         return "default"
 
-def get_hosts_from_pykube_ingress(ingress):
-    rules = ingress.obj['spec']['rules']
-    return (rule['host'] for rule in rules)
+
+def _set_dict_path(dict, path, value):
+    path = copy(path)
+    first = path.pop(0)
+    if len(path) == 0:
+        dict[first] = value
+    else:
+        dict[first] = dict.get(first, {})
+        _set_dict_path(dict[first], path, value)
+
 
 
