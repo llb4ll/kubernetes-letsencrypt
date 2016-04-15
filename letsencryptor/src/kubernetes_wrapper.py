@@ -1,8 +1,10 @@
-from pykube import Ingress, KubeConfig, HTTPClient
+from pykube import Ingress, KubeConfig, HTTPClient, Secret
 import logging
+
 
 log = logging.getLogger("Kubenertes")
 
+SCERET_LABEL_LETSENCRYPTOR = "letsencryptor-tls"
 INGRESS_NAME_LETSENCRYPTOR = "letsencryptor"
 SERVICE_ACCOUNT_PATH="/var/run/secrets/kubernetes.io/serviceaccount"
 NAMESPACE_FILE=SERVICE_ACCOUNT_PATH + "/namespace"
@@ -23,7 +25,6 @@ class Kubernetes(object):
         namespace = _get_namespace_from_secrets()
         return Kubernetes(api_client=api_client, kube_config=kube_config, namespace=namespace)
 
-
     def fetch_ingress_object(self, name=INGRESS_NAME_LETSENCRYPTOR):
         try:
             for ingress in Ingress.objects(self.api_client).filter(namespace=self.namespace):
@@ -31,10 +32,13 @@ class Kubernetes(object):
                     return ingress
         except Exception as exception:
             log.exception(exception)
-            log.info("Failed to fetch Ingress objects in namespace {}".format(namespace))
+            log.info("Failed to fetch Ingress objects in namespace {}".format(self.namespace))
             return None
-        log.info("Failed to find ingress controller in namespace {} with name {}".format(namespace, name))
+        log.info("Failed to find ingress controller in namespace {} with name {}".format(self.namespace, name))
         return None
+
+    def fetch_secret_objects(self, label=SCERET_LABEL_LETSENCRYPTOR):
+        return list(Secret.objects(self.api_client).filter(label=label, namespace=self.namespace))
 
 
 def _get_namespace_from_secrets(namespace_filename=NAMESPACE_FILE):
