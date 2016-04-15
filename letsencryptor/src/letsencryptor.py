@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 
-from pykube import KubeConfig, HTTPClient, Ingress
 from time import sleep
 import logging
 from letsencrypt_wrapper import LetsEncrypt
