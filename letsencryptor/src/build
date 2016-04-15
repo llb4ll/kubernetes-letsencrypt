@@ -3,8 +3,8 @@
 REMOTE=gcr.io/test-cg
 
 cd `dirname $0`
-TIMESTAMP=`date --utc +%Y%m%d%H%M%S`
-TAG=letsencryptor2:${1-$TIMESTAMP}
+TIMESTAMP=`date --utc +%Y-%m-%dT%H-%M-%SZ`
+TAG=letsencryptor:${1-$TIMESTAMP}
 echo Building docker image with tag $TAG
 docker build -t $TAG .
 echo Built docker image with tag $TAG

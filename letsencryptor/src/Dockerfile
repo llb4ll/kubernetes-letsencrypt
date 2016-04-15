@@ -4,6 +4,7 @@ RUN apt-get update && apt-get install -y -t jessie-backports --no-install-recomm
 
 RUN pip install pykube
 
-ADD pykube_example.py /pykube_example.py
+ADD *.py /
 
-ENTRYPOINT ["python", "-u", "/pykube_example.py"]
+RUN ["python", "-u", "/smoke_test.py"]
+ENTRYPOINT ["python", "-u", "/letsencryptor.py"]
