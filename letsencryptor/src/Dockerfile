@@ -6,5 +6,6 @@ RUN pip install pykube
 
 ADD *.py /
 
+ENV PYKUBE_KUBERNETES_SERVICE_HOST=kubernetes.default.svc.cluster.local
 RUN ["python", "-u", "/smoke_test.py"]
 ENTRYPOINT ["python", "-u", "/letsencryptor.py"]

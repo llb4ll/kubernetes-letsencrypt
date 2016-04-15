@@ -28,7 +28,7 @@ class Kubernetes(object):
     def fetch_ingress_object(self, name=INGRESS_NAME_LETSENCRYPTOR):
         try:
             for ingress in Ingress.objects(self.api_client).filter(namespace=self.namespace):
-                if ingress.name == self.ingress_name:
+                if ingress.name == name:
                     return ingress
         except Exception as exception:
             log.exception(exception)
@@ -38,7 +38,7 @@ class Kubernetes(object):
         return None
 
     def fetch_secret_objects(self, label=SCERET_LABEL_LETSENCRYPTOR):
-        return list(Secret.objects(self.api_client).filter(label=label, namespace=self.namespace))
+        return list(Secret.objects(self.api_client).filter(selector=label, namespace=self.namespace))
 
 
 def _get_namespace_from_secrets(namespace_filename=NAMESPACE_FILE):
