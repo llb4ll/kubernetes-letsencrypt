@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    name: server-letsencryptor
+  name: server-letsencryptor
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+      name: http
+      nodePort: 30960
+  selector:
+    name: server-letsencryptor
+  type: NodePort
