@@ -9,6 +9,7 @@ spec:
     - port: 8080
       targetPort: 8080
       name: http
+      nodePort: 30960
   selector:
     name: server-letsencryptor
-  type: ClusterIP
+  type: NodePort
