@@ -24,10 +24,10 @@ class Letsencryptor(object):
         hosts = get_hosts_from_pykube_ingress(ingress)
         host_list = ", ".join(hosts)
         log.info("Found ingress object with hosts: " + host_list)
-        secrets = self.kubernetes.fetch_secret_objects()
-        log.info("Found {} secrets: {}".format(len(secrets), ",".join((s.name for s in secrets))))
-        for s in secrets:
-            log.info(pretty.format(s.obj))
+        #secrets = self.kubernetes.fetch_secret_objects()
+        #log.info("Found {} secrets: {}".format(len(secrets), ",".join((s.name for s in secrets))))
+        #for s in secrets:
+        #    log.info(pretty.format(s.obj))
         LetsEncrypt().renew_letsencrypt(host_list)
 
     def main(self):
@@ -43,7 +43,6 @@ class Letsencryptor(object):
             if pykube_ingress is not None:
                 self.refresh_ingress(pykube_ingress)
             sleep(self.kubernetes_polling_delay)
-
 
 if __name__ == "__main__":
     Letsencryptor().main()
