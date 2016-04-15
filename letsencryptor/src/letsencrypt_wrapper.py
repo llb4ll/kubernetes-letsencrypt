@@ -19,7 +19,7 @@ class LetsEncrypt(object):
             "--email={}".format(self.email),
             "--standalone",
             "--standalone-supported-challenges=http-01",
-            "--http-01-port" + str(self.port),
+            "--http-01-port=" + str(self.port),
             "--rsa-key-size=2048",
             "--keep-until-expiring",
             "--domains={}".format(host_list),
