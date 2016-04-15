@@ -15,7 +15,7 @@ class LetsEncrypt(object):
             "--standalone-supported-challenges=http-01",
             "--rsa-key-size=2048",
             "--keep-until-expiring",
-            "--domains=\"{}\"".format(host_list),
+            "--domains={}".format(host_list),
             "--test-cert"
         ])
 
