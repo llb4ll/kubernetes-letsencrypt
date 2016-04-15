@@ -20,7 +20,7 @@ spec:
             servicePort: 8080
         - path: /foo
           backend:
-            serviceName: server-minefield
+            serviceName: default-http-backend
             servicePort: 8080
   tls:
     - secretName: letsencryptor-base2

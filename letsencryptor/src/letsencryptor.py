@@ -33,6 +33,10 @@ class Letsencryptor(object):
     def main(self):
         namespace = self.kubernetes.namespace
         logging.info("Letsencryptor running for namespace {}".format(namespace))
+
+        cert = self.letsencrypt.get_cert()
+        logging.info("Cert found: {}".format(cert))
+
         while (True):
             pykube_ingress = self.kubernetes.fetch_ingress_object()
             if pykube_ingress is not None:

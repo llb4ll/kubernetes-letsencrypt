@@ -25,5 +25,16 @@ class LetsEncrypt(object):
             "--version"
         ])
 
+    def get_cert(self):
+        file = open('/etc/letsencrypt/live/fullchain.pem', 'r')
+        return file.read()
+        file.close()
+
+    def get_key(self):
+        file = open('/etc/letsencrypt/live/privkey.pem', 'r')
+        return file.read()
+        file.close()
+
+
 if __name__ == "__main__":
     LetsEncrypt().get_version();
