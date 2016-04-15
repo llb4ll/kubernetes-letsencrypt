@@ -12,6 +12,7 @@ class LetsEncrypt(object):
         self.port = port
 
     def renew_letsencrypt(self, host_list):
+        logging.info("Calling letsencrypt for hosts {} trying challenge at port {} with notification email {}.".format(host_list, self.port, self.email))
         subprocess.call([
             self.letsencrypt_bin,
             "certonly",

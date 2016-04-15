@@ -21,15 +21,9 @@ spec:
         volumeMounts:
         - mountPath: /etc/letsencrypt
           name: letsencryptor-workdir
-        - mountPath: /var/lib/letsencrypt
-          name: letsencryptor-config
       volumes:
         # This GCE PD must already exist. Read README for more information
       - name: letsencryptor-workdir
         gcePersistentDisk:
           pdName: server-letsencryptor-workdir
-          fsType: ext4
-      - name: letsencryptor-config
-        gcePersistentDisk:
-          pdName: server-letsencryptor-config
           fsType: ext4

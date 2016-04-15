@@ -23,10 +23,12 @@ class Letsencryptor(object):
     def refresh_ingress(self, ingress):
         hosts = k8s.get_hosts_from_pykube_ingress(ingress)
         host_list = ", ".join(hosts)
+        log.info("Found ingress object with hosts: " + host_list)
         LetsEncrypt().renew_letsencrypt(host_list)
         self._log_secrets()
 
     def main(self):
+
         namespace = self.kubernetes.namespace
         logging.info("Letsencryptor running for namespace {}".format(namespace))
 
