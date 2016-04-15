@@ -1,10 +1,14 @@
 import subprocess
 
 LETSENCRYPT_PORT = 8080
+DEFAULT_EMAIL = "letsencyptor@example.net"
+
 
 class LetsEncrypt(object):
-    def __init__(self):
+    def __init__(self, email=DEFAULT_EMAIL, port=LETSENCRYPT_PORT):
         self.letsencrypt_bin = "letsencrypt"
+        self.email = email
+        self.port = port
 
     def renew_letsencrypt(self, host_list):
         subprocess.call([
@@ -12,10 +16,10 @@ class LetsEncrypt(object):
             "certonly",
             "--non-interactive",
             "--agree-tos",
-            "--email=\"{}\".format(EMAIL)",
+            "--email={}".format(self.email),
             "--standalone",
             "--standalone-supported-challenges=http-01",
-            "--http-01-port", LETSENCRYPT_PORT,
+            "--http-01-port" + str(self.port),
             "--rsa-key-size=2048",
             "--keep-until-expiring",
             "--domains={}".format(host_list),
