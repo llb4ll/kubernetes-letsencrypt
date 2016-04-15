@@ -6,12 +6,14 @@ log = logging.getLogger("Kubenertes")
 INGRESS_NAME_LETSENCRYPTOR = "letsencryptor"
 SERVICE_ACCOUNT_PATH="/var/run/secrets/kubernetes.io/serviceaccount"
 NAMESPACE_FILE=SERVICE_ACCOUNT_PATH + "/namespace"
+TOKEN_FILE=SERVICE_ACCOUNT_PATH + "/token"
 
 
 class Kubernetes(object):
     def __init__(self, api_client, kube_config, namespace):
         self.api_client = api_client
         self.namespace = namespace
+        self.kube_config = kube_config
 
     @classmethod
     def create_from_secrets(cls):
