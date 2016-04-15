@@ -10,15 +10,15 @@ spec:
     - host: demo.cg.ts.egym.coffee
       http:
         paths:
-        - path: /play
+        - path: /play/*
           backend:
             serviceName: server-minefield
             servicePort: 8080
-        - path: /.well-known/acme-challenge
+        - path: /.well-known/acme-challenge/*
           backend:
             serviceName: server-letsencryptor
             servicePort: 8080
-        - path: /foo
+        - path: /foo/*
           backend:
             serviceName: default-http-backend
             servicePort: 8080

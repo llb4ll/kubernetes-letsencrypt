@@ -1,4 +1,5 @@
 import subprocess
+import logging
 
 LETSENCRYPT_PORT = 8080
 DEFAULT_EMAIL = "letsencyptor@example.net"
@@ -32,15 +33,18 @@ class LetsEncrypt(object):
             "--version"
         ])
 
-    def get_cert(self):
-        file = open('/etc/letsencrypt/live/fullchain.pem', 'r')
-        return file.read()
-        file.close()
-
-    def get_key(self):
-        file = open('/etc/letsencrypt/live/privkey.pem', 'r')
-        return file.read()
-        file.close()
+    def get_current_letsencrypt_entity(self, host_name, entity):
+        file_name='/etc/letsencrypt/live/{}/{}.pem'.format(host_name, entity)
+        try:
+            with open(file_name, 'r') as file:
+                file_content = file.read()
+                file.close()
+                return file_content
+        except IOError:
+            logging.warn("File {} could not be opened.".format(file_name))
+        else:
+            logging.warn("Unexpectad error when trying to read file.")
+        return
 
 
 if __name__ == "__main__":

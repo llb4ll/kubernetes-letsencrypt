@@ -31,10 +31,11 @@ class Letsencryptor(object):
         LetsEncrypt().renew_letsencrypt(host_list)
 
     def main(self):
+
         namespace = self.kubernetes.namespace
         logging.info("Letsencryptor running for namespace {}".format(namespace))
 
-        cert = self.letsencrypt.get_cert()
+        cert = self.letsencrypt.get_current_letsencrypt_entity("demo.cg.lg.ts.egym.coffee", "fullchain")
         logging.info("Cert found: {}".format(cert))
 
         while (True):
