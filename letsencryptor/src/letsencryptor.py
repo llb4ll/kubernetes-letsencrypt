@@ -35,7 +35,7 @@ class Letsencryptor(object):
         namespace = self.kubernetes.namespace
         logging.info("Letsencryptor running for namespace {}".format(namespace))
 
-        cert = self.letsencrypt.get_current_letsencrypt_entity("demo.cg.lg.ts.egym.coffee", "fullchain")
+        cert = self.letsencrypt.get_current_letsencrypt_entity("demo.cg.ts.egym.coffee", "fullchain")
         logging.info("Cert found: {}".format(cert))
 
         while (True):
