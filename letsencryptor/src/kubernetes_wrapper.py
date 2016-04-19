@@ -53,7 +53,7 @@ class Kubernetes(object):
 
 
 def set_name(k8s_obj, name):
-    _set_dict_path(k8s_obj, ['name'], name)
+    _set_dict_path(k8s_obj, ['metadata', 'name'], name)
 
 
 def set_namespace(k8s_obj, namespace):
