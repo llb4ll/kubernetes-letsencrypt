@@ -5,8 +5,8 @@ import logging
 
 log = logging.getLogger("Kubenertes")
 
-SCERET_LABEL = "letsencryptor-tls"
-SECRET_BASENAME = SCERET_LABEL
+SECRET_LABEL = "letsencryptor-tls"
+SECRET_BASENAME = SECRET_LABEL
 INGRESS_NAME = "letsencryptor"
 SERVICE_ACCOUNT_PATH="/var/run/secrets/kubernetes.io/serviceaccount"
 NAMESPACE_FILE=SERVICE_ACCOUNT_PATH + "/namespace"
@@ -39,7 +39,7 @@ class Kubernetes(object):
         log.info("Failed to find ingress controller in namespace {} with name {}".format(self.namespace, name))
         return None
 
-    def fetch_secret_objects(self, label=SCERET_LABEL):
+    def fetch_secret_objects(self, label=SECRET_LABEL):
         return list(Secret.objects(self.api_client).filter(selector=label, namespace=self.namespace))
 
     def create_secret(self, secret_obj):
@@ -52,8 +52,14 @@ class Kubernetes(object):
         set_namespace(k8s_obj, self.namespace)
 
 
+def _sanitize_name(name):
+    return str(name).lower()
+
+
 def set_name(k8s_obj, name):
+    name = _sanitize_name(name)
     _set_dict_path(k8s_obj, ['metadata', 'name'], name)
+    return name
 
 
 def set_namespace(k8s_obj, namespace):

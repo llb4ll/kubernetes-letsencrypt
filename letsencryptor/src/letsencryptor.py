@@ -41,12 +41,13 @@ class Letsencryptor(object):
                 self.refresh_ingress(pykube_ingress)
             time.sleep(self.kubernetes_polling_delay)
 
-    def _create_test_secret(self):
+    def create_secret(self, data_dict):
         secret_obj = {}
         tag = _create_timestamp()
-        k8s.set_name(secret_obj, k8s.SECRET_BASENAME + "-" + tag)
-        k8s.set_label(secret_obj, k8s. SCERET_LABEL, tag)
+        secret_name = k8s.set_name(secret_obj, k8s.SECRET_BASENAME + "-" + tag)
+        k8s.set_label(secret_obj, k8s.SECRET_LABEL, tag)
         self.kubernetes.create_secret(secret_obj)
+        log.info("Created secret {} with label {}={}".format(secret_name, k8s.SECRET_LABEL, tag))
 
     def _log_secrets(self):
         secrets = self.kubernetes.fetch_secret_objects()
