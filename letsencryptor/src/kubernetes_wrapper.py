@@ -1,3 +1,4 @@
+import base64
 from copy import copy
 from pykube import Ingress, KubeConfig, HTTPClient, Secret
 import logging
@@ -27,19 +28,25 @@ class Kubernetes(object):
         namespace = _get_namespace_from_secrets()
         return Kubernetes(api_client=api_client, kube_config=kube_config, namespace=namespace)
 
-    def fetch_ingress_object(self, name=INGRESS_NAME):
+    def fetch_pykube_ingress(self, name=INGRESS_NAME):
+        return self._fetch_pykube(Ingress, name=name)
+
+    def fetch_pykube_secret(self, name):
+        return self._fetch_pykube(Secret, name=name)
+
+    def _fetch_pykube(self, pykube_type, name=INGRESS_NAME):
         try:
-            for ingress in Ingress.objects(self.api_client).filter(namespace=self.namespace):
-                if ingress.name == name:
-                    return ingress
+            for p in pykube_type.objects(self.api_client).filter(namespace=self.namespace):
+                if p.name == name:
+                    return p
         except Exception as exception:
             log.exception(exception)
-            log.info("Failed to fetch Ingress objects in namespace {}".format(self.namespace))
+            log.info("Failed to fetch {} objects in namespace {}".format(pykube_type, self.namespace))
             return None
-        log.info("Failed to find ingress controller in namespace {} with name {}".format(self.namespace, name))
+        log.info("Failed to find {} object in namespace {} with name {}".format(pykube_type, self.namespace, name))
         return None
 
-    def fetch_secret_objects(self, label=SECRET_LABEL):
+    def fetch_pykube_secrets(self, label=SECRET_LABEL):
         return list(Secret.objects(self.api_client).filter(selector=label, namespace=self.namespace))
 
     def create_secret(self, secret_obj):
@@ -50,6 +57,12 @@ class Kubernetes(object):
 
     def set_namespace(self, k8s_obj):
         set_namespace(k8s_obj, self.namespace)
+
+    def fetch_pykube_secret_from_pykube_ingress(self, pykube_ingress):
+        pykube_ingress = Ingress()
+        secret_name = get_tls_secret_name_from_pykube_ingress(pykube_ingress)
+        return self.fetch_pykube_secret(name = secret_name)
+
 
 
 def _sanitize_name(name):
@@ -70,9 +83,22 @@ def set_label(k8s_obj, key, val):
     _set_dict_path(k8s_obj, ['metadata', 'labels', key], val)
 
 
-def get_hosts_from_pykube_ingress(ingress):
-    rules = ingress.obj['spec']['rules']
+def set_data(k8s_obj, key, binary):
+    encoded = base64.b64encode(binary)
+    _set_dict_path(k8s_obj, _get_data_path(key), encoded)
+
+
+def _get_data_path(key):
+    return ['data', key]
+
+
+def get_hosts_from_pykube_ingress(pykube_ingress):
+    rules = _get_dict_path(ingress.obj, ['spec', 'rules'])
     return (rule['host'] for rule in rules)
+
+
+def get_tls_secret_name_from_pykube_ingress(pykube_ingress):
+    return _get_dict_path(ingress.obj, ['spec', 'tls', 'secretName'])
 
 
 def _get_namespace_from_secrets(namespace_filename=NAMESPACE_FILE):
@@ -88,7 +114,6 @@ def _get_namespace_from_secrets(namespace_filename=NAMESPACE_FILE):
 
 
 def _set_dict_path(dict, path, value):
-    path = copy(path)
     first = path.pop(0)
     if len(path) == 0:
         dict[first] = value
@@ -97,4 +122,31 @@ def _set_dict_path(dict, path, value):
         _set_dict_path(dict[first], path, value)
 
 
+def _get_dict_path(dict, path):
+    first, path = _get_first(path)
+    dict = dict.get(first)
+    if len(path) == 0:
+        return dict
+    elif dict is None:
+        return None
+    else:
+        return _get_dict_path(dict, path)
 
+
+def _get_first(iterable):
+    iterable = list(iterable)
+    iterable = list(iterable)
+    first = iterable.pop(0)
+    return first, iterable
+
+
+def unwrap(pykube_object):
+    return pykube_object.obj
+
+
+def _compare_dict_path(k8s_obj1, k8s_obj2, path):
+    return _get_dict_path(k8s_obj1, path) == _get_dict_path(k8s_obj2, path)
+
+
+def compare_data(k8s_obj1, k8s_obj2, key):
+    return _compare_dict_path(k8s_obj1, k8s_obj2, _get_data_path(key))

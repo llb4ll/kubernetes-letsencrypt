@@ -1,15 +1,18 @@
 import subprocess
 import logging
 
+DATA_PATH = '/etc/letsencrypt/live'
 LETSENCRYPT_PORT = 8080
 DEFAULT_EMAIL = "letsencyptor@example.net"
-
+FULLCHAIN = "fullchain"
+PRIVKEY = "privkey"
 
 class LetsEncrypt(object):
-    def __init__(self, email=DEFAULT_EMAIL, port=LETSENCRYPT_PORT):
+    def __init__(self, email=DEFAULT_EMAIL, port=LETSENCRYPT_PORT, data_path=DATA_PATH):
         self.letsencrypt_bin = "letsencrypt"
         self.email = email
         self.port = port
+        self.data_path = data_path
 
     def renew_letsencrypt(self, host_list):
         logging.info("Calling letsencrypt for hosts {} trying challenge at port {} with notification email {}.".format(host_list, self.port, self.email))
@@ -35,18 +38,22 @@ class LetsEncrypt(object):
         ])
 
     def get_current_letsencrypt_entity(self, host_name, entity):
-        file_name='/etc/letsencrypt/live/{}/{}.pem'.format(host_name, entity)
+        file_name= '{}/{}/{}.pem'.format(host_name, self.data_path, entity)
         try:
             with open(file_name, 'r') as file:
-                file_content = file.read()
-                file.close()
-                return file_content
+                return file.read()
         except IOError:
             logging.warn("File {} could not be opened.".format(file_name))
         else:
-            logging.warn("Unexpectad error when trying to read file.")
+            logging.warn("Unexpected error when trying to read file.")
         return
+
+    def get_current_fullchain_cert(self, host_list):
+        return self.get_current_letsencrypt_entity(host_list, FULLCHAIN)
+
+    def get_current_private_key(self, host_list):
+        return self.get_current_letsencrypt_entity(host_list, PRIVKEY)
 
 
 if __name__ == "__main__":
-    LetsEncrypt().get_version();
+    LetsEncrypt().get_version()
