@@ -59,13 +59,12 @@ class Letsencryptor(object):
             self.refresh_cert()
             time.sleep(self.kubernetes_polling_delay)
 
-    def create_secret(self, data_dict):
-        secret_obj = {}
+    def _set_secret_name_and_tag(self, secret_obj):
         tag = _create_timestamp()
         secret_name = k8s.set_name(secret_obj, k8s.SECRET_BASENAME + "-" + tag)
         k8s.set_label(secret_obj, k8s.SECRET_LABEL, tag)
-        self.kubernetes.create_secret(secret_obj)
-        log.info("Created secret {} with label {}={}".format(secret_name, k8s.SECRET_LABEL, tag))
+        log.info("Creating secret {} with label {}={}".format(secret_name, k8s.SECRET_LABEL, tag))
+        return secret_name
 
     def _log_secrets(self):
         secrets = self.kubernetes.fetch_pykube_secrets()
@@ -79,9 +78,14 @@ class Letsencryptor(object):
         k8s.set_data(new_secret, SECRET_DATA_KEY_PEM, key_pem)
         old_secret = k8s.unwrap(self.kubernetes.fetch_pykube_secret_from_pykube_ingress(pykube_ingress))
         if k8s.compare_data(new_secret, old_secret, SECRET_DATA_CERT_PEM) and k8s.compare_data(new_secret, old_secret, SECRET_DATA_KEY_PEM):
-            log.info("Found secret {}. Data matches. No update required.")
-
-
+            log.info("Found existing secret {}. TLS Data matches. No update required.".format(k8s.get_name(old_secret)))
+        else:
+            secret_name = self._set_secret_name_and_tag(new_secret)
+            self.kubernetes.create_secret(new_secret)
+            pykube_ingress = k8s.Ingress
+            k8s.set_secret_name(pykube_ingress.obj, secret_name)
+            pykube_ingress.update()
+            log.info("Updated ingress object {} with secret {}".format(pykube_ingress.name, secret_name))
 
 
 def _create_timestamp():

@@ -71,16 +71,21 @@ def _sanitize_name(name):
 
 def set_name(k8s_obj, name):
     name = _sanitize_name(name)
-    _set_dict_path(k8s_obj, ['metadata', 'name'], name)
+    _set_dict_path(k8s_obj, ('metadata', 'name'), name)
     return name
 
 
+def get_name(k8s_obj):
+    return _get_dict_path(k8s_obj, ('metadata', 'name'))
+
+
+
 def set_namespace(k8s_obj, namespace):
-    _set_dict_path(k8s_obj, ['metadata', 'namespace'], namespace)
+    _set_dict_path(k8s_obj, ('metadata', 'namespace'), namespace)
 
 
 def set_label(k8s_obj, key, val):
-    _set_dict_path(k8s_obj, ['metadata', 'labels', key], val)
+    _set_dict_path(k8s_obj, ('metadata', 'labels', key), val)
 
 
 def set_data(k8s_obj, key, binary):
@@ -93,12 +98,16 @@ def _get_data_path(key):
 
 
 def get_hosts_from_pykube_ingress(pykube_ingress):
-    rules = _get_dict_path(ingress.obj, ['spec', 'rules'])
+    rules = _get_dict_path(unwrap(pykube_ingress), ('spec', 'rules'))
     return (rule['host'] for rule in rules)
 
 
 def get_tls_secret_name_from_pykube_ingress(pykube_ingress):
-    return _get_dict_path(ingress.obj, ['spec', 'tls', 'secretName'])
+    return _get_dict_path(unwrap(pykube_ingress), ('spec', 'tls', 'secretName'))
+
+
+def set_secret_name(ingress_obj, secret_name):
+    _set_dict_path(ingress_obj, ('spec', 'tls', 'secretName'), secret_name)
 
 
 def _get_namespace_from_secrets(namespace_filename=NAMESPACE_FILE):
