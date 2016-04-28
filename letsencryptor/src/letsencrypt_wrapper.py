@@ -38,7 +38,7 @@ class LetsEncrypt(object):
         ])
 
     def get_current_letsencrypt_entity(self, host_name, entity):
-        file_name= '{}/{}/{}.pem'.format(host_name, self.data_path, entity)
+        file_name = self._get_filename(host_name, entity)
         try:
             with open(file_name, 'r') as file:
                 return file.read()
@@ -47,6 +47,9 @@ class LetsEncrypt(object):
         else:
             logging.warn("Unexpected error when trying to read file.")
         return
+
+    def _get_filename(self, host_name, entity):
+        return '{}/{}/{}.pem'.format(self.data_path, host_name, entity)
 
     def get_current_fullchain_cert(self, host_list):
         return self.get_current_letsencrypt_entity(host_list, FULLCHAIN)

@@ -59,9 +59,10 @@ class Kubernetes(object):
         set_namespace(k8s_obj, self.namespace)
 
     def fetch_pykube_secret_from_pykube_ingress(self, pykube_ingress):
-        pykube_ingress = Ingress()
         secret_name = get_tls_secret_name_from_pykube_ingress(pykube_ingress)
-        return self.fetch_pykube_secret(name = secret_name)
+        if secret_name:
+            return self.fetch_pykube_secret(name = secret_name)
+        return None
 
 
 
@@ -113,7 +114,19 @@ def _map_to_value(list_of_dicts, key):
 
 
 def get_tls_secret_name_from_pykube_ingress(pykube_ingress):
-    return _get_dict_path(unwrap(pykube_ingress), ('spec', 'tls', 'secretName'))
+    secrets = _get_dict_path(unwrap(pykube_ingress), ('spec', 'tls', 'secretName'))
+    if _isiterable(secrets):
+        n = len(secrets)
+        if n == 0:
+            log.info("No existing TLS secrets found. (Empty list)")
+        else:
+            if n != 1:
+                log.warn("Found TLS {} secrets. Will continue with first one.".format(n))
+            secret = secrets[0]
+            log.info("Found exisiting TLS secret: {}".format(secret))
+            return secret
+    log.info("No exisiting TLS secrets found. ({})".format(secrets))
+    return None
 
 
 def set_secret_name(ingress_obj, secret_name):
@@ -142,16 +155,21 @@ def _set_dict_path(dict, path, value):
 
 
 def _get_dict_path(d, path):
-    if not isinstance(d, dict):
-        raise AssertionError("Expected dict with path {}, got {} {}".format(path, type(d), d))
-    first, remaining = _get_first(path)
-    d = d.get(first)
-    if len(remaining) == 0:
-        return d
+    if isinstance(d, dict):
+        first, remaining = _get_first(path)
+        d = d.get(first)
+        if len(remaining) == 0:
+            return d
+        elif d is None:
+            return None
+        else:
+            return _get_dict_path(d, remaining)
+    elif _isiterable(d):
+        return [_get_dict_path(item) for item in d]
     elif d is None:
         return None
     else:
-        return _get_dict_path(d, remaining)
+        raise AssertionError("Expected dict or iterable with path {}, got {} {}".format(path, type(d), d))
 
 
 def _get_first(iterable):

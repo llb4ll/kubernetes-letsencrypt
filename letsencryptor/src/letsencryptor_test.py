@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import letsencryptor
 from kubernetes_fake import Kubernetes
 from letsencrypt_fake import Letsencrypt

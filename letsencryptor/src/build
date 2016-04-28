@@ -5,6 +5,7 @@ REMOTE=gcr.io/test-cg
 cd `dirname $0`
 echo Running unit tests
 ./kubernetes_unittest.py
+./letsencryptor_test.py
 TIMESTAMP=`date --utc +%Y-%m-%dT%H-%M-%SZ`
 TAG=server-letsencryptor:${1-$TIMESTAMP}
 echo Building docker image with tag $TAG
