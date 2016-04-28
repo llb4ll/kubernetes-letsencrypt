@@ -82,8 +82,7 @@ class Letsencryptor(object):
         else:
             secret_name = self._set_secret_name_and_tag(new_secret)
             self.kubernetes.create_secret(new_secret)
-            pykube_ingress = k8s.Ingress
-            k8s.set_secret_name(pykube_ingress.obj, secret_name)
+            k8s.set_tls_secret_name(k8s.unwrap(pykube_ingress), secret_name)
             pykube_ingress.update()
             log.info("Updated ingress object {} with secret {}".format(pykube_ingress.name, secret_name))
 

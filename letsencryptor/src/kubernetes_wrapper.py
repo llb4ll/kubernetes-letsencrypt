@@ -59,7 +59,7 @@ class Kubernetes(object):
         set_namespace(k8s_obj, self.namespace)
 
     def fetch_pykube_secret_from_pykube_ingress(self, pykube_ingress):
-        secret_name = get_tls_secret_name_from_pykube_ingress(pykube_ingress)
+        secret_name = get_tls_secret_name(pykube_ingress)
         if secret_name:
             return self.fetch_pykube_secret(name = secret_name)
         return None
@@ -113,7 +113,7 @@ def _map_to_value(list_of_dicts, key):
     return []
 
 
-def get_tls_secret_name_from_pykube_ingress(pykube_ingress):
+def get_tls_secret_name(pykube_ingress):
     secrets = _get_dict_path(unwrap(pykube_ingress), ('spec', 'tls', 'secretName'))
     if _isiterable(secrets):
         n = len(secrets)
@@ -129,8 +129,12 @@ def get_tls_secret_name_from_pykube_ingress(pykube_ingress):
     return None
 
 
-def set_secret_name(ingress_obj, secret_name):
-    _set_dict_path(ingress_obj, ('spec', 'tls', 'secretName'), secret_name)
+def set_tls_secret_name(ingress_obj, secret_name):
+    """
+    Overwrites the list of TLS secrets in an ingress object with a list containing solely secret_name
+    """
+    secret_list = [{'secretName': secret_name}]
+    _set_dict_path(ingress_obj, ('spec', 'tls'), secret_list)
 
 
 def _get_namespace_from_secrets(namespace_filename=NAMESPACE_FILE):
@@ -165,7 +169,7 @@ def _get_dict_path(d, path):
         else:
             return _get_dict_path(d, remaining)
     elif _isiterable(d):
-        return [_get_dict_path(item) for item in d]
+        return [_get_dict_path(item, path) for item in d]
     elif d is None:
         return None
     else:
@@ -178,8 +182,10 @@ def _get_first(iterable):
     return first, iterable
 
 
-def unwrap(pykube_object):
-    return pykube_object.obj
+def unwrap(pykube_or_dict):
+    if isinstance(pykube_or_dict, dict):
+        return pykube_or_dict
+    return pykube_or_dict.obj
 
 
 def _compare_dict_path(k8s_obj1, k8s_obj2, path):

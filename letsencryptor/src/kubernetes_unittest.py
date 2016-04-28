@@ -47,5 +47,13 @@ class KubernetesUnitTest(TestCase):
         k8s.set_data(b, 'key', 'binary')
         self.assertTrue(k8s.compare_data(a, b, 'key'))
 
+    def test_set_get_secret(self):
+        d = {}
+        expected= "test-secret"
+        k8s.set_tls_secret_name(d, expected)
+        output = k8s.get_tls_secret_name(d)
+        self.assertEqual(expected, output)
+
+
 if __name__ == "__main__":
     main()
