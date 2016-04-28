@@ -5,4 +5,4 @@ class Kubernetes(k8s.Kubernetes):
         super(Kubernetes, self).__init__(None, None, namespace="test-namespace")
 
     def _fetch_pykube(self, pykube_type, name=None):
-        return pykube_type(self.api_client, self.namespace)
+        return pykube_type(api = self.api_client, obj = {})

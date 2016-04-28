@@ -99,7 +99,17 @@ def _get_data_path(key):
 
 def get_hosts_from_pykube_ingress(pykube_ingress):
     rules = _get_dict_path(unwrap(pykube_ingress), ('spec', 'rules'))
-    return (rule['host'] for rule in rules)
+    return _map_to_value(rules, 'host')
+
+
+def _isiterable(obj):
+    return hasattr(obj, '__iter__')
+
+
+def _map_to_value(list_of_dicts, key):
+    if _isiterable(list_of_dicts):
+        return (rule[key] for rule in list_of_dicts)
+    return []
 
 
 def get_tls_secret_name_from_pykube_ingress(pykube_ingress):
@@ -123,27 +133,28 @@ def _get_namespace_from_secrets(namespace_filename=NAMESPACE_FILE):
 
 
 def _set_dict_path(dict, path, value):
-    first = path.pop(0)
-    if len(path) == 0:
+    first, remaining = _get_first(path)
+    if len(remaining) == 0:
         dict[first] = value
     else:
         dict[first] = dict.get(first, {})
-        _set_dict_path(dict[first], path, value)
+        _set_dict_path(dict[first], remaining, value)
 
 
-def _get_dict_path(dict, path):
-    first, path = _get_first(path)
-    dict = dict.get(first)
-    if len(path) == 0:
-        return dict
-    elif dict is None:
+def _get_dict_path(d, path):
+    if not isinstance(d, dict):
+        raise AssertionError("Expected dict with path {}, got {} {}".format(path, type(d), d))
+    first, remaining = _get_first(path)
+    d = d.get(first)
+    if len(remaining) == 0:
+        return d
+    elif d is None:
         return None
     else:
-        return _get_dict_path(dict, path)
+        return _get_dict_path(d, remaining)
 
 
 def _get_first(iterable):
-    iterable = list(iterable)
     iterable = list(iterable)
     first = iterable.pop(0)
     return first, iterable

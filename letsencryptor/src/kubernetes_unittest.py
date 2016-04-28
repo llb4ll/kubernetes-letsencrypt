@@ -29,5 +29,23 @@ class KubernetesUnitTest(TestCase):
         secret = pykube.Secret(None, obj)
         self.assertEquals(secret.name, name)
 
+    def test_set_get_dict_path(self):
+        d = {}
+        k8s._set_dict_path(d, [1,2,3], 4)
+        self.assertEqual(d, {1:{2:{3:4}}})
+        self.assertEqual(k8s._get_dict_path(d, (1,2,3)), 4)
+
+    def test_set_get_dict_path_simple(self):
+        d = {}
+        k8s._set_dict_path(d, 'key', 'val')
+        self.assertEqual(k8s._get_dict_path(d, 'key'), 'val')
+
+    def test_compare_data(self):
+        a = {'foo': 'bar'}
+        b = {'foo': 'not bar'}
+        k8s.set_data(a, 'key', 'binary')
+        k8s.set_data(b, 'key', 'binary')
+        self.assertTrue(k8s.compare_data(a, b, 'key'))
+
 if __name__ == "__main__":
     main()

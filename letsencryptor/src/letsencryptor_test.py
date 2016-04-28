@@ -10,8 +10,8 @@ class LetsencryptorTest(TestCase):
         self.kubernetes = Kubernetes()
         self.letsencryptor = letsencryptor.Letsencryptor(kubernetes=self.kubernetes, letsencrypt=self.letsencrypt)
 
-    def testFoo(self):
-        self.letsencryptor.main()
+    def test_dry_run(self):
+        self.letsencryptor.refresh_cert()
 
 
 if __name__ == "__main__":
