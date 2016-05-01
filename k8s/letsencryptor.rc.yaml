@@ -1,21 +1,22 @@
 apiVersion: v1
 kind: ReplicationController
 metadata:
-  name: server-letsencryptor
+  name: letsencryptor
 spec:
+  # Since we employ a read/write persistent disk, we can only have one replica
   replicas: 1
   selector:
-    name: server-letsencryptor
+    name: letsencryptor
   template:
     metadata:
       labels:
-        name: server-letsencryptor
-      name: server-letsencryptor
+        name: letsencryptor
+      name: letsencryptor
     spec:
       containers:
       - imagePullPolicy: Always
-        image: gcr.io/test-cg/server-letsencryptor:2016-04-28T16-30-52Z
-        name: server-letsencryptor
+        image: gcr.io/test-cg/server-letsencryptor:2016-05-01T16-53-04Z
+        name: letsencryptor
         ports:
         - containerPort: 8080
         volumeMounts:
