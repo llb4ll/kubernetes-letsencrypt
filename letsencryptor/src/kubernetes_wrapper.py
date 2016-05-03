@@ -185,7 +185,7 @@ def _get_first(iterable):
 def unwrap(pykube_or_dict):
     if isinstance(pykube_or_dict, dict):
         return pykube_or_dict
-    return pykube_or_dict.obj
+    return getattr(pykube_or_dict, 'obj', {})
 
 
 def _compare_dict_path(k8s_obj1, k8s_obj2, path):

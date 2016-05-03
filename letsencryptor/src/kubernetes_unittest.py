@@ -54,6 +54,19 @@ class KubernetesUnitTest(TestCase):
         output = k8s.get_tls_secret_name(d)
         self.assertEqual(expected, output)
 
+    def test_unwrap_with_dict(self):
+        D = {'a': 'b'}
+        d = k8s.unwrap(D)
+        self.assertEqual(d, D)
 
-if __name__ == "__main__":
+    def test_unwrap_with_None(self):
+        d = k8s.unwrap(None)
+        self.assertEqual(d, {})
+
+    def test_unwrap_with_pykube(self):
+        D = {'c': 'd'}
+        d = k8s.unwrap(k8s.Secret(None, D))
+        self.assertEqual(k8s._get_dict_path(d, 'c'), 'd')
+
+if  __name__ == "__main__":
     main()

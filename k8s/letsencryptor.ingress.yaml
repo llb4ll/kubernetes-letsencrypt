@@ -4,24 +4,13 @@ metadata:
   name: letsencryptor
 spec:
   backend:
-    serviceName: server-minefield
-    servicePort: 8080
+    serviceName: hello-world
+    servicePort: 80
   rules:
-    - host: demo.cg.ts.egym.coffee
+    - host: le1.cg.ts.egym.coffee
       http:
         paths:
-        - path: /play/*
-          backend:
-            serviceName: server-minefield
-            servicePort: 8080
         - path: /.well-known/acme-challenge/*
           backend:
-            serviceName: server-letsencryptor
-            servicePort: 8080
-        - path: /foo/*
-          backend:
-            serviceName: default-http-backend
-            servicePort: 8080
-  tls:
-    - secretName: letsencryptor-base2
-  
+            serviceName: letsencryptor
+            servicePort: http
