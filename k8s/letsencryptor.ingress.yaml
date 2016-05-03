@@ -14,3 +14,10 @@ spec:
           backend:
             serviceName: letsencryptor
             servicePort: http
+    - host: le2.cg.ts.egym.coffee
+      http:
+        paths:
+        - path: /.well-known/acme-challenge/*
+          backend:
+            serviceName: letsencryptor
+            servicePort: http
