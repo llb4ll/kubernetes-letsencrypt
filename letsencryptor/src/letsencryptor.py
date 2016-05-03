@@ -46,8 +46,10 @@ class Letsencryptor(object):
 
     def run_letsencrypt(self, host_list):
         self.letsencrypt.renew_letsencrypt(host_list)
-        cert_pem = self.letsencrypt.get_current_fullchain_cert(host_list)
-        key_pem = self.letsencrypt.get_current_private_key(host_list)
+        # Attempts to guess the filename of the cert
+        first_host = host_list.split(",")[0]
+        cert_pem = self.letsencrypt.get_current_fullchain_cert(first_host)
+        key_pem = self.letsencrypt.get_current_private_key(first_host)
         return cert_pem, key_pem
 
     def main(self):

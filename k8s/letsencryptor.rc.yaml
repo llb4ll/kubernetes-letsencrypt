@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - imagePullPolicy: Always
-        image: gcr.io/test-cg/server-letsencryptor:2016-05-01T16-53-04Z
+        image: gcr.io/test-cg/server-letsencryptor:2016-05-03T16-57-51Z
         name: letsencryptor
         ports:
         - containerPort: 8080

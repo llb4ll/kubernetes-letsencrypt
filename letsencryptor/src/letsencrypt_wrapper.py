@@ -15,21 +15,21 @@ class LetsEncrypt(object):
         self.data_path = data_path
 
     def renew_letsencrypt(self, host_list):
-        logging.info("Calling letsencrypt for hosts {} trying challenge at port {} with notification email {}.".format(host_list, self.port, self.email))
-        subprocess.call([
-            self.letsencrypt_bin,
-            "certonly",
-            "--non-interactive",
-            "--agree-tos",
-            "--email={}".format(self.email),
-            "--standalone",
-            "--standalone-supported-challenges=http-01",
-            "--http-01-port=" + str(self.port),
-            "--rsa-key-size=2048",
-            "--keep-until-expiring",
-            "--domains={}".format(host_list),
-            "--test-cert"
-        ])
+        le_command_line = (self.letsencrypt_bin,
+                           "certonly",
+                           "--non-interactive",
+                           "--agree-tos",
+                           "--email={}".format(self.email),
+                           "--standalone",
+                           "--standalone-supported-challenges=http-01",
+                           "--http-01-port=" + str(self.port),
+                           "--rsa-key-size=2048",
+                           "--keep-until-expiring",
+                           "--domains={}".format(host_list),
+                           "--expand" ,
+                           "--test-cert")
+        logging.info("Calling letsencrypt: " + " ".join(le_command_line))
+        subprocess.call(le_command_line)
 
     def get_version(self):
         subprocess.call([
