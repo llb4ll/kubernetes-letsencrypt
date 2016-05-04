@@ -47,6 +47,13 @@ class KubernetesUnitTest(TestCase):
         k8s.set_data(b, 'key', 'binary')
         self.assertTrue(k8s.compare_data(a, b, 'key'))
 
+    def test_compare_data_false(self):
+        a = {'foo': 'bar'}
+        b = {'foo': 'not bar'}
+        k8s.set_data(a, 'key', 'binary')
+        k8s.set_data(b, 'key', 'OTHER')
+        self.assertFalse(k8s.compare_data(a, b, 'key'))
+
     def test_set_get_secret(self):
         d = {}
         expected= "test-secret"

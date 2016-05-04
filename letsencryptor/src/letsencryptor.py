@@ -33,7 +33,7 @@ class Letsencryptor(object):
             # No matching ingress object found. Error has already been logged. Nothing else to do.
             return
         hosts = k8s.get_hosts_from_pykube_ingress(pykube_ingress)
-        host_list = ", ".join(hosts)
+        host_list = ",".join(hosts)
         if not host_list:
             log.info("Empty host_list. Nothing to do.")
             return
@@ -79,6 +79,7 @@ class Letsencryptor(object):
         k8s.set_data(new_secret, SECRET_DATA_CERT_PEM, cert_pem)
         k8s.set_data(new_secret, SECRET_DATA_KEY_PEM, key_pem)
         old_secret = k8s.unwrap(self.kubernetes.fetch_pykube_secret_from_pykube_ingress(pykube_ingress))
+        log.info()
         if k8s.compare_data(new_secret, old_secret, SECRET_DATA_CERT_PEM) and k8s.compare_data(new_secret, old_secret, SECRET_DATA_KEY_PEM):
             log.info("Found existing secret {}. TLS Data matches. No update required.".format(k8s.get_name(old_secret)))
         else:

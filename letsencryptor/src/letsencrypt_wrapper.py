@@ -39,6 +39,7 @@ class LetsEncrypt(object):
 
     def get_current_letsencrypt_entity(self, host_name, entity):
         file_name = self._get_filename(host_name, entity)
+        logging.info("Reading letsencrypt entity from file {}.".format(file_name))
         try:
             with open(file_name, 'r') as file:
                 return file.read()
