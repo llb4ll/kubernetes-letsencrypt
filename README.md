@@ -2,7 +2,6 @@
 Let'sEncrypt meets Kubernetes. Use Let'sEncrypt together with the Ingress API
 
 ## Ingress meets Let's Encrypt
-TODO: Update and clean up.
 ![Ingress meets Let's Encrypt](letsencryptor/letsencryptor.svg)
 See: http://kubernetes.io/docs/user-guide/ingress/
 
