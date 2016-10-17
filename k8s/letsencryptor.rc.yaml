@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: letsencryptor
+spec:
+  # Since we employ a read/write persistent disk, we can only have one replica
+  replicas: 1
+  selector:
+    name: letsencryptor
+  template:
+    metadata:
+      labels:
+        name: letsencryptor
+      name: letsencryptor
+    spec:
+      containers:
+      - imagePullPolicy: Always
+        image: gcr.io/test-cg/server-letsencryptor:2016-05-04T07-56-07Z
+        name: letsencryptor
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - mountPath: /etc/letsencrypt
+          name: letsencryptor-workdir
+      volumes:
+        # This GCE PD must already exist. Read README for more information
+      - name: letsencryptor-workdir
+        gcePersistentDisk:
+          pdName: server-letsencryptor-workdir
+          fsType: ext4

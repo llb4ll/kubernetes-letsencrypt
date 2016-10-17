@@ -1,0 +1,15 @@
+#!/bin/bash
+
+REMOTE=gcr.io/test-cg
+
+cd `dirname $0`
+echo Running unit tests
+./kubernetes_unittest.py
+./letsencryptor_test.py
+TIMESTAMP=`date --utc +%Y-%m-%dT%H-%M-%SZ`
+TAG=server-letsencryptor:${1-$TIMESTAMP}
+echo Building docker image with tag $TAG
+docker build -t $TAG .
+echo Built docker image with tag $TAG
+echo Tagging for remote repo as $REMOTE/$TAG
+docker tag $TAG $REMOTE/$TAG

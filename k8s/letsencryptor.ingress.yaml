@@ -1,0 +1,23 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: letsencryptor
+spec:
+  backend:
+    serviceName: hello-world
+    servicePort: 80
+  rules:
+    - host: le1.cg.ts.egym.coffee
+      http:
+        paths:
+        - path: /.well-known/acme-challenge/*
+          backend:
+            serviceName: letsencryptor
+            servicePort: http
+    - host: le2.cg.ts.egym.coffee
+      http:
+        paths:
+        - path: /.well-known/acme-challenge/*
+          backend:
+            serviceName: letsencryptor
+            servicePort: http
